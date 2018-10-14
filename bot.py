@@ -1,109 +1,54 @@
 import discord
 import config
-####--------------------- COMMAND HANDLER --------------------------####
+import random
+from discord.ext import commands
 
-class CommandHandler:
-
-    def __init__(self,client):
-        self.client = client
-        self.commands = []
-
-    def add_command(self, command):
-        self.commands.append(command)
-    
-    def command_handler(self, message):
-        for command in self.commands:
-            if message.content.startswith(command["trigger"]):
-                args = message.content.split(' ')
-                if args[0] ==  command["trigger"]:
-                    args.pop(0)
-                    if command['args_num'] == 0:
-                        return self.client.send_message(message.channel,str(command['function'](message, self.client, args)))
-                        break
-                    else:
-                        if len(args) >=  command["args_num"]:
-                            return self.client.send_message(message.channel,str(command['function'](message, self.client, args)))
-                            break
-                        else:
-                            return self.client.send_message(message.channel, 'command "{}" requires {} argument(s) "{}"'.format(command['trigger'], command['args_num'], ', '.join(command['args_name'])))
-                            break
-                else:
-                    break
-
-
-####--------------------- INITIALIZE CLIENT AND COMMAND HANDLER --------------------------####
-client = discord.Client()
+####--------------------- INITIALIZE VARIABLES --------------------------####
 token = config.token
-ch = CommandHandler(client)
+description = "basic bot"
+bot = commands.Bot(command_prefix='!', description=description)
+commandList={"!hello":"replyes with a hello message (or not).","!kick":"kicks a member.",\
+"!commands": "prints a list of the existing bot commands." }
 
-####--------------------- LISTENERS --------------------------####
-@client.event
+####--------------------- EVENTS --------------------------####
+@bot.event
 async def on_ready():
-    try:
-        print(client.user.name)
-        print(client.user.id)
-        print('Discord.py Version: {}'.format(discord.__version__))
-    except Exception as e:
-        print(e)    
-
-@client.event
-async def on_message(message):
-    
-    # if the message is from the bot itself ignore it
-    if message.author == client.user:
-        pass
-    else:
-        
-        # try to evaluate with the command handler
-        try:
-            await ch.command_handler(message)
-            
-        # message doesn't contain a command trigger
-        except TypeError as e:
-            pass
-        
-        # generic python error
-        except Exception as e:
-            print(e)
-
-
+    print("name: " + bot.user.name)
+    print("id: " + bot.user.id)
 
 ####--------------------- BOT COMMANDS --------------------------####
 
-# Argument One: {}'.format(message.author, args[0])
+@bot.command()
+async def kick(member: discord.Member):
+    await bot.kick(member)
 
-def hello_function(message, client, args):
+@bot.command()
+async def hello():
     try:
-        a = str(message.author).split('#')
-        return 'Fuck you {}, call me when you have something usefull to say, you dumb shit!'.format(a[0])
+        await bot.say('Fuck you, call me when you have something usefull to say, you dumb shit!')
     except Exception as e:
         return e
-ch.add_command({
-    'trigger': '!hello',
-    'function': hello_function,
-    'args_num': 0,
-    'args_name': ['string'],
-    'description': 'Will respond hello to the caller'
-})
 
-
-def commands_command(message, client, args):
+@bot.command()
+async def commands():
     try:
         coms = '**Commands List**\n'
-        for command in ch.commands:
-            coms += '**{}** : {}\n'.format(command['trigger'], command['description'])
-        return coms
+        for com in commandList:
+            coms += '**{}** : {}\n'.format(com, commandList[com])
+        await bot.say(coms)
     except Exception as e:
-        print(e)
-ch.add_command({
-    'trigger': '!commands',
-    'function': commands_command,
-    'args_num': 0,
-    'args_name': [],
-    'description': 'Prints a list of all the commands!'
-})
+        return e
 
+# !choose a or b; a,b or c;
 
+@bot.command()
+async def choose(*args):
+    try:
+        options = list(args)
+        options = list(filter(lambda a: a != "or", options))
+        chosen = random.choice(options)
+        await bot.say('Hmmm, lets see...\nI choose: **{}**'.format(chosen))
+    except Exception as e:
+        return e
 ####--------------------- RUN --------------------------####
-# start bot
-client.run(token)
+bot.run(token)
