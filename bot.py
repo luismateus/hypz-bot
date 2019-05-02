@@ -7,8 +7,10 @@ from discord.ext import commands
 token = config.token
 description = "basic bot"
 bot = commands.Bot(command_prefix='!', description=description)
-commandList={"!hello":"replyes with a hello message (or not).","!kick":"kicks a member.",\
-"!commands": "prints a list of the existing bot commands." }
+commandList={"!hello":"replyes with a hello message (or not).",\
+            "!kick":"kicks a member.",\
+            "!commands": "prints a list of the existing bot commands.",\
+            "!choose": "given an enumeration separated by 'or' random selects one of the options." }
 
 ####--------------------- EVENTS --------------------------####
 @bot.event
@@ -25,7 +27,7 @@ async def kick(member: discord.Member):
 @bot.command()
 async def hello():
     try:
-        await bot.say('Fuck you, call me when you have something usefull to say, you dumb shit!')
+        await bot.say('Fuck you!')
     except Exception as e:
         return e
 
